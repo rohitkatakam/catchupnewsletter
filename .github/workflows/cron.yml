@@ -1,0 +1,20 @@
+name: Daily Cron
+
+on:
+  schedule:
+    - cron: '0 14 * * *'  # 9am ET daily
+  workflow_dispatch:
+
+jobs:
+  trigger-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send prompt
+        run: |
+          curl -f -X POST ${{ secrets.APP_URL }}/api/cron/send-prompt \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Send newsletter
+        run: |
+          curl -f -X POST ${{ secrets.APP_URL }}/api/cron/send-newsletter \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
