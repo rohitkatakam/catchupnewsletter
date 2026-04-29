@@ -2,9 +2,9 @@
 
 import { createSupabaseBrowserClient } from "@/lib/supabase";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-export default function HomePage() {
+function LoginForm() {
   const supabase = createSupabaseBrowserClient();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,42 +43,46 @@ export default function HomePage() {
   }
 
   if (sent) {
-    return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="text-lg">Check your email for a sign-in link.</p>
-      </main>
-    );
+    return <p className="text-lg">Check your email for a sign-in link.</p>;
   }
 
   return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-80">
+      <h1 className="text-2xl font-semibold">Sign in to Catchup</h1>
+      {error && <p className="text-red-600 text-sm">{error}</p>}
+      <input
+        type="text"
+        required
+        placeholder="Your name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="border rounded px-3 py-2 text-sm"
+      />
+      <input
+        type="email"
+        required
+        placeholder="your@email.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="border rounded px-3 py-2 text-sm"
+      />
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-black text-white rounded px-3 py-2 text-sm disabled:opacity-50"
+      >
+        {loading ? "Sending…" : "Send magic link"}
+      </button>
+    </form>
+  );
+}
+
+export default function HomePage() {
+  return (
     <main className="flex min-h-screen items-center justify-center">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-80">
-        <h1 className="text-2xl font-semibold">Sign in to Catchup</h1>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <input
-          type="text"
-          required
-          placeholder="Your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="border rounded px-3 py-2 text-sm"
-        />
-        <input
-          type="email"
-          required
-          placeholder="your@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="border rounded px-3 py-2 text-sm"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-black text-white rounded px-3 py-2 text-sm disabled:opacity-50"
-        >
-          {loading ? "Sending…" : "Send magic link"}
-        </button>
-      </form>
+      <Suspense>
+        <LoginForm />
+      </Suspense>
     </main>
   );
 }
