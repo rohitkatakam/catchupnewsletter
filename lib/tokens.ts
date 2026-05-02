@@ -19,7 +19,7 @@ export async function validateConfirmToken(
 
 export async function validateResponseToken(
   token: string
-): Promise<{ valid: boolean; userId?: string; promptId?: string }> {
+): Promise<{ valid: boolean; expired?: boolean; userId?: string; promptId?: string }> {
   const supabase = createSupabaseServiceClient();
   const { data } = await supabase
     .from("response_tokens")
@@ -27,6 +27,6 @@ export async function validateResponseToken(
     .eq("token", token)
     .single();
   if (!data) return { valid: false };
-  if (new Date(data.expires_at) < new Date()) return { valid: false };
+  if (new Date(data.expires_at) < new Date()) return { valid: false, expired: true };
   return { valid: true, userId: data.user_id, promptId: data.prompt_id };
 }
