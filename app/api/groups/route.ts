@@ -15,12 +15,18 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { name, send_day, deadline_day, send_hour, timezone, char_limit } = body;
 
+  let isValidTimezone = false;
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: timezone });
+    isValidTimezone = true;
+  } catch {}
+
   if (
     !name ||
     send_day == null || send_day < 0 || send_day > 6 ||
     deadline_day == null || deadline_day < 0 || deadline_day > 6 ||
     send_hour == null || send_hour < 0 || send_hour > 23 ||
-    !timezone ||
+    !timezone || !isValidTimezone ||
     !char_limit
   ) {
     return NextResponse.json({ error: "Invalid fields" }, { status: 400 });

@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { createSupabaseServiceClient } from "@/lib/supabase";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import DeleteGroupButton from "./DeleteGroupButton";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -17,7 +18,7 @@ export default async function DashboardPage() {
     .eq("owner_id", user.id)
     .order("created_at", { ascending: false });
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const origin = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
   return (
     <main className="max-w-2xl mx-auto p-8">
@@ -50,6 +51,7 @@ export default async function DashboardPage() {
                     {origin}/join/{code}
                   </span>
                 )}
+                <DeleteGroupButton groupId={group.id} />
               </li>
             );
           })}
