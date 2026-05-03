@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase";
 import { generateText } from "@/lib/openrouter";
-import { NEWSLETTER_SYSTEM_PROMPT } from "@/lib/prompts";
+import { buildNewsletterSystemPrompt } from "@/lib/prompts";
 import { sendEmail } from "@/lib/brevo";
 import NewsletterEmail from "@/emails/NewsletterEmail";
 import { render } from "@react-email/render";
@@ -72,9 +72,7 @@ export async function POST(request: NextRequest) {
           return `${user?.name ?? "Anonymous"}: ${r.content}`;
         })
         .join("\n");
-      const systemPrompt = NEWSLETTER_SYSTEM_PROMPT
-        .replace("{prompt}", prompt.content)
-        .replace("{responses}", formattedResponses);
+      const systemPrompt = buildNewsletterSystemPrompt([prompt.content], formattedResponses);
       content = await generateText(systemPrompt, "Write the newsletter.");
     }
 

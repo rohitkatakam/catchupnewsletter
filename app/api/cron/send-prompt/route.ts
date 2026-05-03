@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase";
 import { generateText } from "@/lib/openrouter";
-import { PROMPT_SYSTEM_PROMPT } from "@/lib/prompts";
+import { buildPromptSystemPrompt } from "@/lib/prompts";
 import { sendEmail } from "@/lib/brevo";
 import PromptEmail from "@/emails/PromptEmail";
 import { render } from "@react-email/render";
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       .limit(12);
 
     const recentList = recentPrompts?.map((p) => p.content).join("\n") ?? "none";
-    const systemPrompt = PROMPT_SYSTEM_PROMPT.replace("{recentPrompts}", recentList);
+    const systemPrompt = buildPromptSystemPrompt({ recentPrompts: recentList });
 
     const promptText = await generateText(systemPrompt, "Generate a new prompt.");
 
