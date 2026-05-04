@@ -51,7 +51,15 @@ export default async function DashboardPage() {
                     {origin}/join/{code}
                   </span>
                 )}
-                <DeleteGroupButton groupId={group.id} />
+                <div className="flex gap-2 mt-1">
+                  <Link
+                    href={`/groups/${group.id}/edit`}
+                    className="text-sm text-gray-600 underline"
+                  >
+                    Edit
+                  </Link>
+                  <DeleteGroupButton groupId={group.id} />
+                </div>
               </li>
             );
           })}

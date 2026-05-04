@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Missing token or content" }, { status: 400 });
   }
 
-  const { token, content } = body;
+  const { token, content, free_response } = body;
 
   const result = await validateResponseToken(token);
   if (!result.valid) {
@@ -24,8 +24,18 @@ export async function POST(request: Request) {
   const { userId, promptId } = result;
   const supabase = createSupabaseServiceClient();
 
+  const upsertData: Record<string, unknown> = {
+    prompt_id: promptId,
+    user_id: userId,
+    content,
+    updated_at: new Date().toISOString(),
+  };
+  if (free_response !== undefined) {
+    upsertData.free_response = free_response || null;
+  }
+
   const { error: upsertError } = await supabase.from("responses").upsert(
-    { prompt_id: promptId, user_id: userId, content, updated_at: new Date().toISOString() },
+    upsertData,
     { onConflict: "prompt_id,user_id" }
   );
   if (upsertError) {

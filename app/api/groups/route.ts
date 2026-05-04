@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const { name, send_day, deadline_day, send_hour, timezone, char_limit } = body;
+  const { name, send_day, deadline_day, send_hour, timezone, char_limit, raunchy_level, num_questions, custom_instructions, allow_free_response } = body;
 
   let isValidTimezone = false;
   try {
@@ -27,7 +27,9 @@ export async function POST(request: NextRequest) {
     deadline_day == null || deadline_day < 0 || deadline_day > 6 ||
     send_hour == null || send_hour < 0 || send_hour > 23 ||
     !timezone || !isValidTimezone ||
-    !char_limit
+    !char_limit ||
+    (raunchy_level != null && (raunchy_level < 1 || raunchy_level > 5)) ||
+    (num_questions != null && (num_questions < 1 || num_questions > 5))
   ) {
     return NextResponse.json({ error: "Invalid fields" }, { status: 400 });
   }
@@ -36,7 +38,13 @@ export async function POST(request: NextRequest) {
 
   const { data: group, error: groupError } = await service
     .from("groups")
-    .insert({ name, owner_id: user.id, send_day, deadline_day, send_hour, timezone, char_limit })
+    .insert({
+      name, owner_id: user.id, send_day, deadline_day, send_hour, timezone, char_limit,
+      raunchy_level: raunchy_level ?? null,
+      num_questions: num_questions ?? 1,
+      custom_instructions: custom_instructions || null,
+      allow_free_response: allow_free_response ?? false,
+    })
     .select("id")
     .single();
 

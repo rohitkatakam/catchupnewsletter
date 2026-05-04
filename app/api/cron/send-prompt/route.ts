@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
   const { data: groups, error: groupsError } = await supabase
     .from("groups")
-    .select("id, name, send_day, deadline_day, send_hour, timezone, char_limit");
+    .select("id, name, send_day, deadline_day, send_hour, timezone, char_limit, raunchy_level, num_questions, custom_instructions");
 
   if (groupsError || !groups) {
     return NextResponse.json({ error: "Failed to fetch groups" }, { status: 500 });
@@ -64,7 +64,13 @@ export async function POST(request: NextRequest) {
       .limit(12);
 
     const recentList = recentPrompts?.map((p) => p.content).join("\n") ?? "none";
-    const systemPrompt = buildPromptSystemPrompt({ recentPrompts: recentList });
+    const raunchyLevel = group.raunchy_level ?? Math.floor(Math.random() * 5) + 1;
+    const systemPrompt = buildPromptSystemPrompt({
+      raunchyLevel,
+      numQuestions: group.num_questions ?? 1,
+      customInstructions: group.custom_instructions ?? undefined,
+      recentPrompts: recentList,
+    });
 
     const promptText = await generateText(systemPrompt, "Generate a new prompt.");
 

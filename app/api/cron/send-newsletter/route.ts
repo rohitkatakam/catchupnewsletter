@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
   const { data: groups, error: groupsError } = await supabase
     .from("groups")
-    .select("id, name, send_day, deadline_day, send_hour, timezone, char_limit");
+    .select("id, name, send_day, deadline_day, send_hour, timezone, char_limit, raunchy_level, custom_instructions, allow_free_response");
 
   if (groupsError || !groups) {
     return NextResponse.json({ error: "Failed to fetch groups" }, { status: 500 });
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     const { data: responses } = await supabase
       .from("responses")
-      .select("content, users(name)")
+      .select("content, free_response, users(name)")
       .eq("prompt_id", prompt.id);
 
     let content: string;
@@ -69,10 +69,19 @@ export async function POST(request: NextRequest) {
       const formattedResponses = responses
         .map((r) => {
           const user = Array.isArray(r.users) ? r.users[0] : r.users;
-          return `${user?.name ?? "Anonymous"}: ${r.content}`;
+          const name = user?.name ?? "Anonymous";
+          let entry = `${name}: ${r.content}`;
+          if (group.allow_free_response && r.free_response?.trim()) {
+            entry += `\n${name} (extra update): ${r.free_response}`;
+          }
+          return entry;
         })
         .join("\n");
-      const systemPrompt = buildNewsletterSystemPrompt([prompt.content], formattedResponses);
+      const raunchyLevel = group.raunchy_level ?? Math.floor(Math.random() * 5) + 1;
+      const systemPrompt = buildNewsletterSystemPrompt([prompt.content], formattedResponses, {
+        raunchyLevel,
+        customInstructions: group.custom_instructions ?? undefined,
+      });
       content = await generateText(systemPrompt, "Write the newsletter.");
     }
 
