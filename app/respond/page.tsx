@@ -27,7 +27,7 @@ export default async function RespondPage({
 
   const { data: prompt } = await supabase
     .from("prompts")
-    .select("content, groups(name, char_limit)")
+    .select("content, groups(name, char_limit, allow_free_response)")
     .eq("id", promptId!)
     .single();
 
@@ -39,7 +39,7 @@ export default async function RespondPage({
 
   const { data: existing } = await supabase
     .from("responses")
-    .select("content")
+    .select("content, free_response")
     .eq("prompt_id", promptId!)
     .eq("user_id", userId!)
     .maybeSingle();
@@ -52,6 +52,8 @@ export default async function RespondPage({
         groupName={group?.name ?? ""}
         charLimit={group?.char_limit ?? 500}
         existing={existing?.content ?? ""}
+        allowFreeResponse={group?.allow_free_response ?? false}
+        existingFreeResponse={existing?.free_response ?? ""}
       />
     </main>
   );

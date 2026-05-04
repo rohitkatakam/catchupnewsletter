@@ -8,10 +8,13 @@ interface ResponseFormProps {
   groupName: string;
   charLimit: number;
   existing: string;
+  allowFreeResponse: boolean;
+  existingFreeResponse: string;
 }
 
-export default function ResponseForm({ token, prompt, groupName, charLimit, existing }: ResponseFormProps) {
+export default function ResponseForm({ token, prompt, groupName, charLimit, existing, allowFreeResponse, existingFreeResponse }: ResponseFormProps) {
   const [content, setContent] = useState(existing);
+  const [freeResponse, setFreeResponse] = useState(existingFreeResponse);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +30,7 @@ export default function ResponseForm({ token, prompt, groupName, charLimit, exis
     const res = await fetch("/api/responses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, content }),
+      body: JSON.stringify({ token, content, free_response: allowFreeResponse ? freeResponse : undefined }),
     });
 
     if (res.ok) {
@@ -63,6 +66,18 @@ export default function ResponseForm({ token, prompt, groupName, charLimit, exis
               {submitting ? "Submitting…" : existing ? "Update response" : "Submit"}
             </button>
           </div>
+          {allowFreeResponse && (
+            <div style={{ marginTop: "24px" }}>
+              <p style={{ fontWeight: 500, marginBottom: "8px" }}>Anything else on your mind? (optional)</p>
+              <textarea
+                value={freeResponse}
+                onChange={(e) => setFreeResponse(e.target.value)}
+                rows={4}
+                style={{ width: "100%", resize: "vertical", boxSizing: "border-box" }}
+                placeholder="Share any other updates, thoughts, or whatever's on your mind…"
+              />
+            </div>
+          )}
           {error && <p style={{ color: "red", marginTop: "8px" }}>{error}</p>}
         </form>
       )}
